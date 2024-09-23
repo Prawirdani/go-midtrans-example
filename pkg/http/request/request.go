@@ -6,6 +6,4 @@ package request
 type RequestBody interface {
 	// Validate is a method to validate request body to ensure all required fields are provided and match the constraints
 	Validate() error
-	// Sanitize is a method to sanitize request body to ensure all fields are in the correct format and clean
-	Sanitize() error
 }

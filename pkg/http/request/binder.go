@@ -19,9 +19,5 @@ func BindValidate(r *http.Request, reqBody RequestBody) error {
 		return parseBodyErr(err)
 	}
 
-	if err := reqBody.Sanitize(); err != nil {
-		return err
-	}
-
 	return reqBody.Validate()
 }
