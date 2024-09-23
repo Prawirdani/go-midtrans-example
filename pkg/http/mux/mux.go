@@ -2,14 +2,16 @@ package mux
 
 import "net/http"
 
-type Mux struct {
-	http.Handler
-	middlewares []func(http.Handler) http.Handler
+type mux struct {
+	*http.ServeMux
+	middlewares  []func(http.Handler) http.Handler
+	emptyHandler bool
 }
 
-func New() *Mux {
-	return &Mux{
-		Handler:     nil,
-		middlewares: make([]func(http.Handler) http.Handler, 0),
+func New() *mux {
+	return &mux{
+		ServeMux:     http.NewServeMux(),
+		emptyHandler: true,
+		middlewares:  make([]func(http.Handler) http.Handler, 0),
 	}
 }
