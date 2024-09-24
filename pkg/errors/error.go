@@ -1,11 +1,10 @@
 package errors
 
 import (
+	"log"
 	"net/http"
 )
 
-// Use these error wrappers for known errors to have precise response status codes, can be used on any abstraction layer.
-// It will only set the message in ErrorResponse, if you want to provide details in the ErrorResponse you should create ApiError object manually.
 var (
 	BadRequest       = build(http.StatusBadRequest)
 	Conflict         = build(http.StatusConflict)
@@ -23,19 +22,16 @@ type ApiError struct {
 	Cause   interface{}
 }
 
-// Return ApiErr in string format
 func (e *ApiError) Error() string {
 	return e.Message
 }
 
-// Error parser, parse every error an turn it into ApiError,
-// So it can be used to determine what status code should be put on the res headers.
-// You can always add your `known error` or make a custom parser for 3rd library/package error.
 func Parse(err error) *ApiError {
 	switch e := err.(type) {
 	case *ApiError:
 		return e
 	default:
+		log.Println("An unexpected error occurred:", err)
 		return &ApiError{
 			Status:  500,
 			Message: "An unexpected error occurred, try again latter",
