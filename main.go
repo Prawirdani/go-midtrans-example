@@ -36,13 +36,18 @@ func main() {
 	productRepo := repository.NewProductRepository(conn)
 	productHandler := handler.NewProductHandler(productRepo)
 	transactionRepo := repository.NewTransactionRepository(conn, productRepo)
+
 	// Setup Services
-	paymentService := service.NewPaymentService(os.Getenv("MIDTRANS_SERVER_KEY"), transactionRepo)
 	transactionService := service.NewTransactionService(
 		productRepo,
 		userRepo,
 		transactionRepo,
 	)
+	paymentService := service.NewPaymentService(
+		os.Getenv("MIDTRANS_SERVER_KEY"),
+		transactionService,
+	)
+
 	// Setup Handlers
 	transactionHandler := handler.NewTransactionHandler(transactionService, paymentService)
 	paymentHandler := handler.NewPaymentHandler(paymentService, transactionService)

@@ -9,7 +9,6 @@ import (
 	"github.com/midtrans/midtrans-go/coreapi"
 	"github.com/midtrans/midtrans-go/snap"
 	"github.com/prawirdani/go-midtrans-example/internal/model"
-	"github.com/prawirdani/go-midtrans-example/internal/repository"
 	"github.com/prawirdani/go-midtrans-example/pkg/errors"
 )
 
@@ -22,14 +21,14 @@ type PaymentService interface {
 }
 
 type paymentService struct {
-	transactionRepo repository.TransactionRepository
-	snapClient      snap.Client
-	coreClient      coreapi.Client
+	transactionService TransactionService
+	snapClient         snap.Client
+	coreClient         coreapi.Client
 }
 
 func NewPaymentService(
 	serverKey string,
-	transactionRepo repository.TransactionRepository,
+	ts TransactionService,
 ) PaymentService {
 	snapClient := snap.Client{}
 	snapClient.New(serverKey, midtrans.Sandbox)
@@ -38,9 +37,9 @@ func NewPaymentService(
 	coreClient.New(serverKey, midtrans.Sandbox)
 
 	return &paymentService{
-		transactionRepo: transactionRepo,
-		snapClient:      snapClient,
-		coreClient:      coreClient,
+		transactionService: ts,
+		snapClient:         snapClient,
+		coreClient:         coreClient,
 	}
 }
 
@@ -48,7 +47,7 @@ func (s *paymentService) Process(
 	ctx context.Context,
 	transactionID string,
 ) (*model.PaymentResult, error) {
-	transaction, err := s.transactionRepo.SelectByID(ctx, transactionID)
+	transaction, err := s.transactionService.FindTransaction(ctx, transactionID)
 	if err != nil {
 		return nil, err
 	}

@@ -37,6 +37,8 @@ func (h *PaymentHandler) ProcessPayment(w http.ResponseWriter, r *http.Request) 
 	_ = res.Send(w, res.WithData(paymentResult))
 }
 
+// PaymentCallback is a handler to handle payment callback from midtrans
+// This handler will be called by midtrans after payment
 func (h *PaymentHandler) PaymentCallback(w http.ResponseWriter, r *http.Request) {
 	// 1. Initialize empty map
 	var notificationPayload map[string]interface{}
