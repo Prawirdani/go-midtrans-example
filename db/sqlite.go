@@ -17,6 +17,64 @@ func Connection() *sql.DB {
 }
 
 func Init(conn *sql.DB) {
+	ensureTables(conn)
+
+	// Seeding if table is empty
+	isTableEmpty := func(tableName string) bool {
+		row := conn.QueryRow(fmt.Sprintf("SELECT COUNT(*) FROM %s", tableName))
+		var count int
+		_ = row.Scan(&count)
+		return count == 0
+	}
+
+	if isTableEmpty("users") {
+		query := "INSERT INTO users (id, first_name, last_name, email, phone) VALUES (?, ?, ?, ?, ?)"
+		_, err := conn.Exec(
+			query,
+			uuid.New().String(),
+			"John",
+			"Doe",
+			"doe@mail.com",
+			"081234567890",
+		)
+		if err != nil {
+			panic("Error inserting user: " + err.Error())
+		}
+		fmt.Println("User seeded")
+	}
+
+	if isTableEmpty("products") {
+		_, err := conn.Exec(
+			`INSERT INTO products (name, price) VALUES 
+			('Product 1', 5000),
+			('Product 2', 10000);
+			`,
+		)
+		if err != nil {
+			panic("Error inserting product: " + err.Error())
+		}
+		fmt.Println("Product seeded")
+	}
+
+	if isTableEmpty("transaction_status") {
+		query := `
+			INSERT INTO transaction_status (status) VALUES 
+			('pending'),
+			('completed'),
+			('failed'),
+			('cancelled');
+		`
+		_, err := conn.Exec(query)
+		if err != nil {
+			panic(err)
+		}
+		fmt.Println("Transaction status seeded")
+	}
+
+	fmt.Println("Database initialized")
+}
+
+func ensureTables(conn *sql.DB) {
 	_, err := conn.Exec(createTableUsers)
 	if err != nil {
 		panic("Error creating table users: " + err.Error())
@@ -31,66 +89,49 @@ func Init(conn *sql.DB) {
 	if err != nil {
 		panic("Error creating table transactions: " + err.Error())
 	}
-
-	// Seeding if table is empty
-	isTableEmpty := func(tableName string) bool {
-		row := conn.QueryRow(fmt.Sprintf("SELECT COUNT(*) FROM %s", tableName))
-		var count int
-		_ = row.Scan(&count)
-		return count == 0
-	}
-
-	if isTableEmpty("users") {
-		q := "INSERT INTO users (id, name) VALUES (?, ?)"
-		_, err = conn.Exec(
-			q,
-			uuid.New().String(),
-			"John Doe",
-		)
-		if err != nil {
-			panic("Error inserting user: " + err.Error())
-		}
-		fmt.Println("User seeded")
-	}
-
-	if isTableEmpty("products") {
-		_, err = conn.Exec(
-			"INSERT INTO products (name, price, quantity) VALUES ('Product 1', 10000, 10)",
-		)
-		if err != nil {
-			panic("Error inserting product: " + err.Error())
-		}
-		fmt.Println("Product seeded")
-	}
-
-	fmt.Println("Database initialized")
 }
 
-var createTableUsers = `
+const createTableUsers = `
 CREATE TABLE IF NOT EXISTS users (
 	id VARCHAR(100) PRIMARY KEY,
-	name TEXT NOT NULL
+	first_name VARCHAR(100) NOT NULL,
+	last_name VARCHAR(100) NOT NULL,
+	email VARCHAR(100) NOT NULL UNIQUE,
+	phone VARCHAR(20) NOT NULL
 );
 `
 
-var createTableProducts = `
+const createTableProducts = `
 CREATE TABLE IF NOT EXISTS products (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name TEXT NOT NULL,
-	price INT NOT NULL,
-	quantity INT NOT NULL
+	price INT NOT NULL
 );
 `
 
-var createTableTransactions = `
+const createTableTransactions = `
+CREATE TABLE IF NOT EXISTS transaction_status(
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	status VARCHAR(100) NOT NULL UNIQUE
+);
+
 CREATE TABLE IF NOT EXISTS transactions (
 	id VARCHAR(100) PRIMARY KEY,
 	user_id VARCHAR(100) NOT NULL,
-	product_id INT NOT NULL,
-	quantity INT NOT NULL,
-	amount INT NOT NULL,
+	status_id INT NOT NULL DEFAULT 1,
+	total INT NOT NULL,
 	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
 	FOREIGN KEY (user_id) REFERENCES users(id),
-	FOREIGN KEY (product_id) REFERENCES products(id)
+	FOREIGN KEY (status_id) REFERENCES transaction_status(id)
+);
+
+CREATE TABLE IF NOT EXISTS transaction_details (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	transaction_id VARCHAR(100) NOT NULL,
+	product_id INT NOT NULL,
+	product_price INT NOT NULL,
+	quantity INT NOT NULL,
+	subtotal INT NOT NULL,
+	FOREIGN KEY (transaction_id) REFERENCES transactions(id)
 );
 `
