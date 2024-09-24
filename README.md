@@ -1,4 +1,4 @@
-### Go Midtrans Example
+# Go Midtrans Example
 This is an example of how to use the Midtrans Snap API in Go with the official [midtrans-go](https://github.com/Midtrans/midtrans-go) client SDK. This example uses `sqlite` as the database for the sake of simplicity and minimal setup. This simple server will cover:
 - Making simple transactions and saving the transaction details in a database
 - Handling After Payment Callbacks and updating the transaction status in the database
@@ -22,8 +22,8 @@ When running the server, a SQLite database named `example.db` will be created in
 - `GET  /transaction`       - Get all transactions
 - `GET  /transaction/:id`   - Get transaction details
 - `POST /transaction`       - Create a transaction.
-    ```json
-    # See the terminal log after running the server to use the seeded user id
+    ```javascript
+    // See the terminal log after running the server to use the seeded user id
     {
       "userId":"58f6a1d6-e883-4371-9b5d-c97edc3b1cf2", 
       "details": [
@@ -39,14 +39,14 @@ When running the server, a SQLite database named `example.db` will be created in
     }
     ```
 - `POST /payments`          - Process payment
-    ```json
-    Request Body:
-    # Use the transaction id from the response of the create transaction endpoint
+    ```javascript
+    // Request Body:
+    // Use the transaction id from the response of the create transaction endpoint
     {
         "transactionId": "97dbe05a-f9cf-475a-80a6-f0263675fcc5",
     }
 
-    Response Body:
+    // Response Body:
     {
         "token": payment_token,
         "redirectUrl": midtrans_payment_redirect_url
