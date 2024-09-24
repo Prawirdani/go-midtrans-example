@@ -69,6 +69,7 @@ func (s *paymentService) Process(
 			GrossAmt: int64(transaction.Total),
 		},
 		Items: &details,
+		// EnabledPayments: snap.AllSnapPaymentType, // Uncomment this line to enable all payment method and comment the next line
 		EnabledPayments: []snap.SnapPaymentType{
 			snap.PaymentTypeGopay,
 			snap.PaymentTypeBankTransfer,
